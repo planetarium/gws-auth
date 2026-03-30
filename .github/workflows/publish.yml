@@ -18,9 +18,17 @@ jobs:
           node-version: '20'
 
       - name: Inject OAuth credentials
+        env:
+          CLIENT_ID: ${{ secrets.GWS_AUTH_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GWS_AUTH_CLIENT_SECRET }}
         run: |
-          sed -i "s|%%GWS_AUTH_CLIENT_ID%%|${{ secrets.GWS_AUTH_CLIENT_ID }}|g" lib/credentials.js
-          sed -i "s|%%GWS_AUTH_CLIENT_SECRET%%|${{ secrets.GWS_AUTH_CLIENT_SECRET }}|g" lib/credentials.js
+          node -e "
+            const fs = require('fs');
+            let f = fs.readFileSync('lib/credentials.js', 'utf8');
+            f = f.replace('%%GWS_AUTH_CLIENT_ID%%', process.env.CLIENT_ID);
+            f = f.replace('%%GWS_AUTH_CLIENT_SECRET%%', process.env.CLIENT_SECRET);
+            fs.writeFileSync('lib/credentials.js', f);
+          "
 
       - name: Verify credentials were injected
         run: |
