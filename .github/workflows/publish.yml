@@ -37,8 +37,7 @@ jobs:
 
       - name: Create GitHub Release
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          TARBALL="anthropic-kr-gws-auth-${VERSION}.tgz"
+          TARBALL=$(ls anthropic-kr-gws-auth-*.tgz)
           gh release create "$GITHUB_REF_NAME" "$TARBALL" \
             --title "gws-auth ${GITHUB_REF_NAME}" \
             --notes "Install: \`npm i -g https://github.com/planetarium/gws-auth/releases/download/${GITHUB_REF_NAME}/${TARBALL}\`"
