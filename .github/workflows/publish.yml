@@ -21,14 +21,7 @@ jobs:
         env:
           CLIENT_ID: ${{ secrets.GWS_AUTH_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.GWS_AUTH_CLIENT_SECRET }}
-        run: |
-          node -e "
-            const fs = require('fs');
-            let f = fs.readFileSync('lib/credentials.js', 'utf8');
-            f = f.replace('%%GWS_AUTH_CLIENT_ID%%', process.env.CLIENT_ID);
-            f = f.replace('%%GWS_AUTH_CLIENT_SECRET%%', process.env.CLIENT_SECRET);
-            fs.writeFileSync('lib/credentials.js', f);
-          "
+        run: node scripts/inject-credentials.js
 
       - name: Verify credentials were injected
         run: |
