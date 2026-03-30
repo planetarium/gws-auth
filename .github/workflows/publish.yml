@@ -25,7 +25,7 @@ jobs:
 
       - name: Verify credentials were injected
         run: |
-          if grep -q '%%' lib/credentials.js; then
+          if grep -q '%%GWS_AUTH_CLIENT_ID%%' lib/credentials.js; then
             echo "::error::Credentials not injected. Check GitHub Secrets."
             exit 1
           fi
