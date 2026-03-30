@@ -1,0 +1,24 @@
+{
+  "name": "@anthropic-kr/gws-auth",
+  "version": "0.1.0",
+  "description": "Google Workspace OAuth token helper CLI — login once, pipe tokens to gws",
+  "keywords": ["google-workspace", "oauth", "gws", "auth", "cli"],
+  "license": "Apache-2.0",
+  "author": "swen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planetarium/gws-auth",
+    "directory": "."
+  },
+  "bin": {
+    "gws-auth": "./bin/gws-auth.js"
+  },
+  "files": ["bin/", "lib/"],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "google-auth-library": "^9.0.0",
+    "open": "^10.0.0"
+  }
+}
