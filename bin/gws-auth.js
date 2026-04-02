@@ -9,7 +9,7 @@ const command = args[0];
 const USAGE = `gws-auth — Google Workspace OAuth token helper
 
 Usage:
-  gws-auth login [--scope <name>]...   Authenticate with Google (device flow)
+  gws-auth login [--scope <name>]...   Authenticate with Google
   gws-auth token                       Print access token to stdout (auto-refreshes)
   gws-auth logout                      Remove cached tokens
   gws-auth status                      Check login status
@@ -17,13 +17,18 @@ Usage:
 
 Options:
   --scope <name>   Add extra scope (can be repeated). Use alias or full URL.
+  --no-browser     Skip auto-opening browser (print URL for manual copy).
+
+Auth flow is auto-selected:
+  - Device flow for basic scopes (spreadsheets, drive.file, etc.)
+  - Authorization code flow for restricted scopes (gmail.*, calendar.*, etc.)
 
 Examples:
   gws-auth login
   gws-auth login --scope gmail.readonly
-  gws-auth login --scope gmail.readonly --scope calendar
+  gws-auth login --scope gmail.modify --scope calendar
+  gws-auth login --scope gmail.send --no-browser
   export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
-  gws sheets +read --spreadsheet <ID> --range Sheet1
 
 Default scopes: spreadsheets, drive.file`;
 
@@ -68,7 +73,7 @@ function listScopes() {
 async function main() {
   switch (command) {
     case 'login':
-      return login(parseScopes(args));
+      return login(parseScopes(args), { noBrowser: args.includes('--no-browser') });
     case 'token':
       return getToken();
     case 'logout':
