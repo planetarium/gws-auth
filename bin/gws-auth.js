@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { login, getToken, logout } = require('../lib/auth');
+const { login, getToken, logout, exchangeCode } = require('../lib/auth');
 const { SCOPE_ALIASES } = require('../lib/credentials');
 
 const args = process.argv.slice(2);
@@ -10,6 +10,7 @@ const USAGE = `gws-auth — Google Workspace OAuth token helper
 
 Usage:
   gws-auth login [--scope <name>]...   Authenticate with Google
+  gws-auth exchange <url>              Exchange auth code from redirect URL
   gws-auth token                       Print access token to stdout (auto-refreshes)
   gws-auth logout                      Remove cached tokens
   gws-auth status                      Check login status
@@ -19,6 +20,7 @@ Options:
   --scope <name>   Add extra scope (can be repeated). Use alias or full URL.
   --flow <type>    Force auth flow: "device" or "authcode" (default: auto).
   --no-browser     Skip auto-opening browser (print URL for manual copy).
+  --remote         Remote mode: print auth URL only, use "exchange" to complete.
 
 Auth flow is auto-selected by default:
   - Device flow for basic scopes (spreadsheets, drive.file, etc.)
@@ -30,6 +32,11 @@ Examples:
   gws-auth login --scope gmail.modify --scope calendar
   gws-auth login --flow authcode
   gws-auth login --scope gmail.send --no-browser
+
+  # Remote / Docker (no localhost callback possible):
+  gws-auth login --scope gmail.readonly --remote
+  gws-auth exchange "http://localhost/callback?code=4/0AQ..."
+
   export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
 
 Default scopes: spreadsheets, drive.file`;
@@ -81,7 +88,19 @@ async function main() {
         console.error(`Unknown flow: ${flow}. Use "device" or "authcode".`);
         process.exit(1);
       }
-      return login(parseScopes(args), { noBrowser: args.includes('--no-browser'), flow });
+      return login(parseScopes(args), {
+        noBrowser: args.includes('--no-browser'),
+        remote: args.includes('--remote'),
+        flow,
+      });
+    }
+    case 'exchange': {
+      const url = args[1];
+      if (!url) {
+        console.error('Usage: gws-auth exchange <redirect-url>');
+        process.exit(1);
+      }
+      return exchangeCode(url);
     }
     case 'token':
       return getToken();
