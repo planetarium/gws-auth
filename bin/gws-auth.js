@@ -17,9 +17,10 @@ Usage:
 
 Options:
   --scope <name>   Add extra scope (can be repeated). Use alias or full URL.
+  --flow <type>    Force auth flow: "device" or "authcode" (default: auto).
   --no-browser     Skip auto-opening browser (print URL for manual copy).
 
-Auth flow is auto-selected:
+Auth flow is auto-selected by default:
   - Device flow for basic scopes (spreadsheets, drive.file, etc.)
   - Authorization code flow for restricted scopes (gmail.*, calendar.*, etc.)
 
@@ -27,6 +28,7 @@ Examples:
   gws-auth login
   gws-auth login --scope gmail.readonly
   gws-auth login --scope gmail.modify --scope calendar
+  gws-auth login --flow authcode
   gws-auth login --scope gmail.send --no-browser
   export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
 
@@ -72,8 +74,15 @@ function listScopes() {
 
 async function main() {
   switch (command) {
-    case 'login':
-      return login(parseScopes(args), { noBrowser: args.includes('--no-browser') });
+    case 'login': {
+      const flowIdx = args.indexOf('--flow');
+      const flow = flowIdx !== -1 && flowIdx + 1 < args.length ? args[flowIdx + 1] : undefined;
+      if (flow && flow !== 'device' && flow !== 'authcode') {
+        console.error(`Unknown flow: ${flow}. Use "device" or "authcode".`);
+        process.exit(1);
+      }
+      return login(parseScopes(args), { noBrowser: args.includes('--no-browser'), flow });
+    }
     case 'token':
       return getToken();
     case 'logout':
