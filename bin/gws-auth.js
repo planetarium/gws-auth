@@ -18,22 +18,16 @@ Usage:
 
 Options:
   --scope <name>   Add extra scope (can be repeated). Use alias or full URL.
-  --flow <type>    Force auth flow: "device" or "authcode" (default: auto).
   --no-browser     Skip auto-opening browser (print URL for manual copy).
 
-Auth flow is auto-selected by default:
-  - Device flow for basic scopes (spreadsheets, drive.file, etc.)
-  - Authorization code flow for restricted scopes (gmail.*, calendar.*, etc.)
-
-For auth code flow, a localhost:80 server catches the callback automatically.
+Login starts a localhost server to catch the OAuth callback automatically.
 If localhost is unreachable (Docker, remote), use "exchange" with the redirect URL.
 
 Examples:
   gws-auth login
   gws-auth login --scope gmail.readonly
   gws-auth login --scope gmail.modify --scope calendar
-  gws-auth login --flow authcode
-  gws-auth exchange "http://localhost/callback?code=4/0AQ..."
+  gws-auth exchange "http://localhost:PORT/callback?code=4/0AQ..."
 
   export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
 
@@ -79,18 +73,8 @@ function listScopes() {
 
 async function main() {
   switch (command) {
-    case 'login': {
-      const flowIdx = args.indexOf('--flow');
-      const flow = flowIdx !== -1 && flowIdx + 1 < args.length ? args[flowIdx + 1] : undefined;
-      if (flow && flow !== 'device' && flow !== 'authcode') {
-        console.error(`Unknown flow: ${flow}. Use "device" or "authcode".`);
-        process.exit(1);
-      }
-      return login(parseScopes(args), {
-        noBrowser: args.includes('--no-browser'),
-        flow,
-      });
-    }
+    case 'login':
+      return login(parseScopes(args), { noBrowser: args.includes('--no-browser') });
     case 'exchange': {
       const url = args[1];
       if (!url) {
