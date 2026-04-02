@@ -17,6 +17,11 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Sync package.json version to tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          npm version "$VERSION" --no-git-tag-version
+
       - name: Inject OAuth credentials
         env:
           CLIENT_ID: ${{ secrets.GWS_AUTH_CLIENT_ID }}
